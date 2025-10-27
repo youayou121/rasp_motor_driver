@@ -24,7 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'vel_pub_node = motor_driver.vel_pub_node:main',
+            'motor_driver_ros2 = motor_driver.motor_driver_ros2:main',
         ],
     },
 )
