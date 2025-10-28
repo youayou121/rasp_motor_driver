@@ -8,6 +8,7 @@ from tf2_ros import TransformBroadcaster
 from nav_msgs.msg import Odometry
 import math
 from tf_transformations import quaternion_from_euler
+from motor_driver.velocity_smoother import VelocitySmoother
 from motor_driver.motor_driver import MotorDriver
 
 class MotorDriverROS(Node):
@@ -20,29 +21,34 @@ class MotorDriverROS(Node):
         self.WHEEL_RADIUS = 0.024
         self.vx = 0
         self.wz = 0
+        self.target_vx = 0
+        self.target_wz = 0
         self.x = 0
         self.y = 0
         self.theta = 0
         self.TPR = 260
+        self.control_hz = 20.0
         self.motor_driver = MotorDriver()
         self.get_logger().info("velocity subscriber started.")
+        self.smoother = VelocitySmoother()
         self.vel_sub = self.create_subscription(Twist, '/cmd_vel', self.cmd_callback, 10)
         self.odom_pub = self.create_publisher(Odometry, '/odom', 10)
         self.odom_timer = self.create_timer(0.1, self.update_odom)
+        self.control_timer = self.create_timer(1 / self.control_hz, self.control_callback)
         self.tf_broadcaster_ = TransformBroadcaster(self)
     def cmd_callback(self, msg):
-        vx = msg.linear.x
-        wz = msg.angular.z
-        self.vx = vx
-        self.wz = wz
-        
-        print(f"get vel input({vx}, {wz})")
-        v_l = vx - (wz * self.WHEEL_DISTANCE / 2.0)
-        v_r = vx + (wz * self.WHEEL_DISTANCE / 2.0)
+        self.target_vx = msg.linear.x
+        self.target_wz = msg.angular.z
+        print(f"target velocity{self.target_vx}, {self.target_wz})")
+
+    def control_callback(self):
+        self.vx, self.wz = self.smoother.update(self.vx, self.wz, self.target_vx, self.target_wz, 1.0 / self.control_hz)
+        print(f"output velocity{self.vx}, {self.wz})")
+        v_l = self.vx - (self.wz * self.WHEEL_DISTANCE / 2.0)
+        v_r = self.vx + (self.wz * self.WHEEL_DISTANCE / 2.0)
         print(f"v_l: {v_l}, v_r: {v_r}")
         duty_l = self.motor_driver.set_left_motor(v_l)
         duty_r = self.motor_driver.set_right_motor(v_r)
-        print(f"l_duty: {duty_l}, r_duty: {duty_r}\n")
 
     def destroy_node(self):
         self.get_logger().info("Stopping motor driver...")
@@ -79,7 +85,6 @@ class MotorDriverROS(Node):
         transform.translation.x = self.x
         transform.translation.y = self.y
         transform.translation.z = 0.0
-        q = quaternion_from_euler(0.0, 0.0, 0.0)
         transform.rotation = odom_msg.pose.pose.orientation
         tf = TransformStamped()
         tf.header.frame_id = frame_id
