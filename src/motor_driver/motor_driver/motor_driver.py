@@ -8,7 +8,7 @@ class MotorDriver():
         self.AIN2 = 15
         self.PWMB = 19
         self.BIN1 = 23
-        self.BIN1 = 24
+        self.BIN2 = 24
         self.MAX_SPEED = 1.0
 
         self.left_ticks = 0
@@ -20,7 +20,7 @@ class MotorDriver():
         self.BR = 21
 
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup([self.AIN1, self.AIN2, self.BIN1, self.BIN1], GPIO.OUT)
+        GPIO.setup([self.AIN1, self.AIN2, self.BIN1, self.BIN2], GPIO.OUT)
         GPIO.setup([self.PWMA, self.PWMB], GPIO.OUT)
         self.pwma = GPIO.PWM(self.PWMA, 1000)
         self.pwmb = GPIO.PWM(self.PWMB, 1000)
