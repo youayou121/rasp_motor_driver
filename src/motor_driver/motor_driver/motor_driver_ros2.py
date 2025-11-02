@@ -26,7 +26,8 @@ class MotorDriverROS(Node):
         self.x = 0
         self.y = 0
         self.theta = 0
-        self.TPR = 260
+        self.TPR_L = 241
+        self.TPR_R = 230
         self.control_hz = 20.0
         self.motor_driver = MotorDriver()
         self.get_logger().info("velocity subscriber started.")
@@ -39,16 +40,17 @@ class MotorDriverROS(Node):
     def cmd_callback(self, msg):
         self.target_vx = msg.linear.x
         self.target_wz = msg.angular.z
-        print(f"target velocity{self.target_vx}, {self.target_wz})")
+        # print(f"target velocity{self.target_vx}, {self.target_wz})")
 
     def control_callback(self):
         self.vx, self.wz = self.smoother.update(self.vx, self.wz, self.target_vx, self.target_wz, 1.0 / self.control_hz)
-        print(f"output velocity{self.vx}, {self.wz})")
+        # print(f"output velocity{self.vx}, {self.wz})")
         v_l = self.vx - (self.wz * self.WHEEL_DISTANCE / 2.0)
         v_r = self.vx + (self.wz * self.WHEEL_DISTANCE / 2.0)
-        print(f"v_l: {v_l}, v_r: {v_r}")
+        # print(f"v_l: {v_l}, v_r: {v_r}")
         duty_l = self.motor_driver.set_left_motor(v_l)
         duty_r = self.motor_driver.set_right_motor(v_r)
+        print(f"duty: {duty_l, duty_r}")
 
     def destroy_node(self):
         self.get_logger().info("Stopping motor driver...")
@@ -57,12 +59,13 @@ class MotorDriverROS(Node):
 
     def update_odom(self):
         left_ticks, right_ticks = self.motor_driver.get_ticks()
+        print(f"ticks: {left_ticks, right_ticks}")
         delta_L = left_ticks - self.last_left_ticks
         delta_R = right_ticks - self.last_right_ticks
         self.last_left_ticks = left_ticks
         self.last_right_ticks = right_ticks
-        dtheta_L = (2 * math.pi * delta_L) / self.TPR
-        dtheta_R = (2 * math.pi * delta_R) / self.TPR
+        dtheta_L = (2 * math.pi * delta_L) / self.TPR_L
+        dtheta_R = (2 * math.pi * delta_R) / self.TPR_R
         ds_L = self.WHEEL_RADIUS * dtheta_L
         ds_R = self.WHEEL_RADIUS * dtheta_R
         ds = (ds_R + ds_L) / 2.0
@@ -92,7 +95,7 @@ class MotorDriverROS(Node):
         tf.header.stamp = self.get_clock().now().to_msg()
         tf.transform = transform
         self.tf_broadcaster_.sendTransform(tf)
-        self.get_logger().info(f'Published transform from {frame_id} to {child_frame_id}')
+        # self.get_logger().info(f'Published transform from {frame_id} to {child_frame_id}')
 
 def main(args=None):
     rclpy.init(args=args)

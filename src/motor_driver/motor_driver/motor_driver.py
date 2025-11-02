@@ -10,7 +10,7 @@ class MotorDriver():
         self.BIN1 = 23
         self.BIN2 = 24
         self.MAX_SPEED = 1.0
-
+        self.min_duty = 5
         self.left_ticks = 0
         self.right_ticks = 0
 
@@ -41,7 +41,8 @@ class MotorDriver():
             duty = 100.0
         else:
             duty = abs(velocity) / self.MAX_SPEED * 100.0
-
+        if velocity > 1e-6:
+            duty = max(self.min_duty, duty)
         if velocity > 0:
             GPIO.output(self.BIN1, GPIO.LOW)
             GPIO.output(self.BIN2, GPIO.HIGH)
@@ -61,7 +62,8 @@ class MotorDriver():
             duty = 100.0
         else:
             duty = abs(velocity) / self.MAX_SPEED * 100.0
-            
+        if velocity > 1e-6:
+            duty = max(self.min_duty, duty)
         if velocity > 0:
             GPIO.output(self.AIN1, GPIO.LOW)
             GPIO.output(self.AIN2, GPIO.HIGH)

@@ -27,7 +27,7 @@ class MotorDriverTest(Node):
         self.x = 0
         self.y = 0
         self.theta = 0
-        self.TPR = 260
+        self.TPR = 241
         self.control_hz = 20.0
         self.get_logger().info("velocity subscriber started.")
         self.smoother = VelocitySmoother()
