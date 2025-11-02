@@ -11,8 +11,8 @@
 24 --- BIN2<br>
 ---
 ### output<br>
-16 --- <br>
-26 --- <br>
-20 --- <br>
-21 --- <br>
+16 --- E2A<br> left
+26 --- E1A<br> right
+20 --- E2B<br> left
+21 --- E1B<br> right
 

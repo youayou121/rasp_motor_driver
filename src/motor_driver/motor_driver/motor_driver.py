@@ -14,10 +14,10 @@ class MotorDriver():
         self.left_ticks = 0
         self.right_ticks = 0
 
-        self.AL = 16
-        self.BL = 20
-        self.AR = 26
-        self.BR = 21
+        self.E2A = 16
+        self.E2B = 20
+        self.E1A = 26
+        self.E1B = 21
 
         GPIO.setmode(GPIO.BCM)
         GPIO.setup([self.AIN1, self.AIN2, self.BIN1, self.BIN2], GPIO.OUT)
@@ -27,13 +27,13 @@ class MotorDriver():
         self.pwma.start(0)
         self.pwmb.start(0)
         
-        GPIO.setup(self.BL, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.setup(self.AL, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.setup(self.BR, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.setup(self.AR, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(self.E2B, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(self.E2A, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(self.E1B, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(self.E1A, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-        GPIO.add_event_detect(self.AL, GPIO.RISING, callback=self.callback_left)
-        GPIO.add_event_detect(self.AR, GPIO.RISING, callback=self.callback_right)
+        GPIO.add_event_detect(self.E2A, GPIO.RISING, callback=self.callback_left)
+        GPIO.add_event_detect(self.E1A, GPIO.RISING, callback=self.callback_right)
 
     def set_left_motor(self, velocity):
         duty = 0.0
@@ -85,17 +85,17 @@ class MotorDriver():
         return self.left_ticks, self.right_ticks
 
     def callback_left(self, channel):
-        if GPIO.input(self.AL):
-            if not GPIO.input(self.BL):
+        if GPIO.input(self.E2A):
+            if not GPIO.input(self.E2B):
                 self.left_ticks -= 1
-            elif GPIO.input(self.BL):
+            elif GPIO.input(self.E2B):
                 self.left_ticks += 1
 
     def callback_right(self, channel):
-        if GPIO.input(self.AR):
-            if not GPIO.input(self.BR):
+        if GPIO.input(self.E1A):
+            if not GPIO.input(self.E1B):
                 self.right_ticks += 1
-            elif GPIO.input(self.BR):
+            elif GPIO.input(self.E1B):
                 self.right_ticks -= 1
 
     
