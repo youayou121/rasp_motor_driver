@@ -46,7 +46,7 @@ class MotorDriverTest(Node):
 
     def control_callback(self):
         self.vx, self.wz = self.smoother.update(self.vx, self.wz, self.target_vx, self.target_wz, 1.0 / self.control_hz)
-        print(f"output velocity{self.vx}, {self.wz})")
+        # print(f"output velocity{self.vx}, {self.wz})")
 
     def destroy_node(self):
         self.get_logger().info("Stopping motor driver...")
@@ -89,7 +89,7 @@ class MotorDriverTest(Node):
         tf.header.stamp = self.get_clock().now().to_msg()
         tf.transform = transform
         self.tf_broadcaster_.sendTransform(tf)
-        self.get_logger().info(f'Published transform from {frame_id} to {child_frame_id}')
+        # self.get_logger().info(f'Published transform from {frame_id} to {child_frame_id}')
 
     def simultae_ticks(self):
         v_r = self.vx + (self.wz * self.WHEEL_DISTANCE / 2.0)
@@ -103,8 +103,7 @@ class MotorDriverTest(Node):
 
         self.right_ticks += delta_ticks_r
         self.left_ticks += delta_ticks_l
-
-        return delta_ticks_l, delta_ticks_r
+        print(f"left_ticks: {self.left_ticks}, right_ticks: {self.right_ticks}")
 def main(args=None):
     rclpy.init(args=args)
     node = MotorDriverTest("motor_driver_test")
