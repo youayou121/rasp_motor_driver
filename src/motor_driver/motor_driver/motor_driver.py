@@ -1,6 +1,6 @@
 import RPi.GPIO as GPIO
 import time
-
+from motor_driver.pid_pwm import PIDPWM
 class MotorDriver():
     def __init__(self):
         self.PWMA = 18
@@ -26,7 +26,10 @@ class MotorDriver():
         self.pwmb = GPIO.PWM(self.PWMB, 1000)
         self.pwma.start(0)
         self.pwmb.start(0)
-        
+        self.pid_pwma = PIDPWM(self.pwma)
+        self.pid_pwmb = PIDPWM(self.pwmb)
+        self.pid_pwma.start()
+        self.pid_pwmb.start()
         GPIO.setup(self.E2B, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(self.E2A, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.setup(self.E1B, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -55,7 +58,7 @@ class MotorDriver():
             GPIO.output(self.BIN1, GPIO.LOW)
             GPIO.output(self.BIN2, GPIO.LOW)
 
-        self.pwmb.ChangeDutyCycle(duty)
+        self.pid_pwmb.set_target(duty)
         return duty
     
     def set_right_motor(self, velocity):
@@ -77,12 +80,12 @@ class MotorDriver():
         else:
             GPIO.output(self.AIN1, GPIO.LOW)
             GPIO.output(self.AIN2, GPIO.LOW)
-        self.pwma.ChangeDutyCycle(duty)
+        self.pid_pwma.set_target(duty)
         return duty
     
     def stop(self):
-        self.pwma.stop()
-        self.pwmb.stop()
+        self.pid_pwma.stop()
+        self.pid_pwmb.stop()
         GPIO.cleanup()
 
     def get_ticks(self):

@@ -26,6 +26,7 @@ setup(
         'console_scripts': [
             'motor_driver_ros2 = motor_driver.motor_driver_ros2:main',
             'motor_driver_test = motor_driver.motor_driver_test:main',
+            'pid = motor_driver.pid:main',
         ],
     },
 )
