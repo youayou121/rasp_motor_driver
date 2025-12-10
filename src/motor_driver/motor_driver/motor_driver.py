@@ -40,48 +40,47 @@ class MotorDriver():
 
     def set_left_motor(self, velocity):
         duty = 0.0
-        if velocity > self.MAX_SPEED:
+        if abs(velocity) > self.MAX_SPEED:
             duty = 100.0
         else:
             duty = abs(velocity) / self.MAX_SPEED * 100.0
-        if abs(velocity) > 0:
-            duty = max(self.min_duty, duty)
-        else: 
-            duty = 0
+
         if velocity > 0:
+            duty = max(self.min_duty, duty)
             GPIO.output(self.BIN1, GPIO.LOW)
             GPIO.output(self.BIN2, GPIO.HIGH)
         elif velocity < 0:
+            duty = min(self.min_duty, duty)
             GPIO.output(self.BIN1, GPIO.HIGH)
             GPIO.output(self.BIN2, GPIO.LOW)
         else:
+            duty = 0
             GPIO.output(self.BIN1, GPIO.LOW)
             GPIO.output(self.BIN2, GPIO.LOW)
 
         self.pid_pwmb.set_target(duty)
-        return duty
+        return self.pid_pwmb.current_duty
     
     def set_right_motor(self, velocity):
         duty = 0.0
-        if velocity > self.MAX_SPEED:
+        if abs(velocity) > self.MAX_SPEED:
             duty = 100.0
         else:
             duty = abs(velocity) / self.MAX_SPEED * 100.0
-        if abs(velocity) > 0:
-            duty = max(self.min_duty, duty)
-        else: 
-            duty = 0
         if velocity > 0:
+            duty = max(self.min_duty, duty)
             GPIO.output(self.AIN1, GPIO.LOW)
             GPIO.output(self.AIN2, GPIO.HIGH)
         elif velocity < 0:
+            duty = min(self.min_duty, duty)
             GPIO.output(self.AIN1, GPIO.HIGH)
             GPIO.output(self.AIN2, GPIO.LOW)
         else:
+            duty = 0
             GPIO.output(self.AIN1, GPIO.LOW)
             GPIO.output(self.AIN2, GPIO.LOW)
         self.pid_pwma.set_target(duty)
-        return duty
+        return self.pid_pwma.current_duty
     
     def stop(self):
         self.pid_pwma.stop()

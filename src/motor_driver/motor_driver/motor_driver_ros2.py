@@ -64,15 +64,17 @@ class MotorDriverROS(Node):
         delta_R = right_ticks - self.last_right_ticks
         self.last_left_ticks = left_ticks
         self.last_right_ticks = right_ticks
-        dtheta_L = (2 * math.pi * delta_L) / self.TPR_L
-        dtheta_R = (2 * math.pi * delta_R) / self.TPR_R
-        ds_L = self.WHEEL_RADIUS * dtheta_L
-        ds_R = self.WHEEL_RADIUS * dtheta_R
+        ds_L = 2 * math.pi * self.WHEEL_RADIUS * delta_L / self.TPR_L
+        ds_R = 2 * math.pi * self.WHEEL_RADIUS * delta_R / self.TPR_R
         ds = (ds_R + ds_L) / 2.0
         dtheta = (ds_R - ds_L) / self.WHEEL_DISTANCE
         self.x += ds * math.cos(self.theta + dtheta / 2.0)
         self.y += ds * math.sin(self.theta + dtheta / 2.0)
         self.theta += dtheta
+        if self.theta > math.pi:
+            self.theta -= 2.0 * math.pi
+        elif self.theta < -math.pi:
+            self.theta += 2.0 * math.pi
         odom_msg = Odometry()
         odom_msg.header.stamp = self.get_clock().now().to_msg()
         frame_id = 'odom'
