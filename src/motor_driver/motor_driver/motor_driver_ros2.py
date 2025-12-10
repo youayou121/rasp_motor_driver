@@ -26,15 +26,15 @@ class MotorDriverROS(Node):
         self.x = 0
         self.y = 0
         self.theta = 0
-        self.TPR_L = 241
-        self.TPR_R = 230
+        self.TPR_L = 260
+        self.TPR_R = 260
         self.control_hz = 20.0
         self.motor_driver = MotorDriver()
         self.get_logger().info("velocity subscriber started.")
         self.smoother = VelocitySmoother()
         self.vel_sub = self.create_subscription(Twist, '/cmd_vel', self.cmd_callback, 10)
         self.odom_pub = self.create_publisher(Odometry, '/odom', 10)
-        self.odom_timer = self.create_timer(0.1, self.update_odom)
+        self.odom_timer = self.create_timer(0.5, self.update_odom)
         self.control_timer = self.create_timer(1 / self.control_hz, self.control_callback)
         self.tf_broadcaster_ = TransformBroadcaster(self)
     def cmd_callback(self, msg):
@@ -59,6 +59,7 @@ class MotorDriverROS(Node):
 
     def update_odom(self):
         left_ticks, right_ticks = self.motor_driver.get_ticks()
+        print(f"last ticks {self.last_left_ticks, self.last_right_ticks}")
         print(f"ticks: {left_ticks, right_ticks}")
         delta_L = left_ticks - self.last_left_ticks
         delta_R = right_ticks - self.last_right_ticks
@@ -68,6 +69,7 @@ class MotorDriverROS(Node):
         ds_R = 2 * math.pi * self.WHEEL_RADIUS * delta_R / self.TPR_R
         ds = (ds_R + ds_L) / 2.0
         dtheta = (ds_R - ds_L) / self.WHEEL_DISTANCE
+        print(f"ds: {ds}, dtheta: {dtheta}")
         self.x += ds * math.cos(self.theta + dtheta / 2.0)
         self.y += ds * math.sin(self.theta + dtheta / 2.0)
         self.theta += dtheta

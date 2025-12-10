@@ -10,7 +10,7 @@ class MotorDriver():
         self.BIN1 = 23
         self.BIN2 = 24
         self.MAX_SPEED = 1.0
-        self.min_duty = 5
+        self.min_duty = 4
         self.left_ticks = 0
         self.right_ticks = 0
 
@@ -26,8 +26,8 @@ class MotorDriver():
         self.pwmb = GPIO.PWM(self.PWMB, 1000)
         self.pwma.start(0)
         self.pwmb.start(0)
-        self.pid_pwma = PIDPWM(self.pwma)
-        self.pid_pwmb = PIDPWM(self.pwmb)
+        self.pid_pwma = PIDPWM(self.pwma, 'a')
+        self.pid_pwmb = PIDPWM(self.pwmb, 'b')
         self.pid_pwma.start()
         self.pid_pwmb.start()
         GPIO.setup(self.E2B, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -94,14 +94,14 @@ class MotorDriver():
         if GPIO.input(self.E2A):
             if not GPIO.input(self.E2B):
                 self.left_ticks -= 1
-            elif GPIO.input(self.E2B):
+            else: 
                 self.left_ticks += 1
 
     def callback_right(self, channel):
         if GPIO.input(self.E1A):
             if not GPIO.input(self.E1B):
                 self.right_ticks += 1
-            elif GPIO.input(self.E1B):
+            else:
                 self.right_ticks -= 1
 
     

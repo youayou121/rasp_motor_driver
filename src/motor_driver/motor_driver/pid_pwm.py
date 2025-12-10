@@ -1,13 +1,15 @@
 import threading
 import time
 import RPi.GPIO as GPIO
+import math
 class PIDPWM(threading.Thread):
-    def __init__(self, pwm, kp = 1.0, ki = 0.1, kd = 0.01, output_limit = 1.0, integral_limit = 10.0, deriv_alpha = 0.9, max_delta = 0.5):
+    def __init__(self, pwm, name, kp = 1.0, ki = 0.1, kd = 0.01, output_limit = 1.0, integral_limit = 10.0, deriv_alpha = 0.9, max_delta = 0.5):
         super().__init__()
         self.pwm = pwm
         self.kp = kp
         self.ki = ki
         self.kd = kd
+        self.name = name
 
         self.output_limit = output_limit
         self.integral_limit = integral_limit
@@ -68,7 +70,7 @@ class PIDPWM(threading.Thread):
 
         self.prev_output = output
 
-        print(f"[debug] P={P:.3f}, I={I:.3f}, D={D:.3f}, out={output:.3f}, dt={dt:.5f}")
+        # print(f"{self.name} P={P:.3f}, I={I:.3f}, D={D:.3f}, out={output:.3f}, dt={dt:.5f}")
 
         return output
     
