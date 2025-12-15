@@ -9,7 +9,7 @@ from nav_msgs.msg import Odometry
 import math
 from tf_transformations import quaternion_from_euler
 from motor_driver.velocity_smoother import VelocitySmoother
-from motor_driver.motor_driver import MotorDriver
+from motor_driver.motor_driver_pigpio import MotorDriver
 
 class MotorDriverROS(Node):
     def __init__(self, node_name):
