@@ -49,11 +49,12 @@ class MotorDriver:
         else:
             duty = abs(velocity) / self.MAX_SPEED * 100.0
 
-        if duty > 0:
+        if velocity > 0:
             duty = max(self.min_duty, duty)
             self.pi.write(self.BIN1, 0)
             self.pi.write(self.BIN2, 1)
         else:
+            duty = min(self.min_duty, duty)
             self.pi.write(self.BIN1, 0)
             self.pi.write(self.BIN2, 0)
 
@@ -66,13 +67,14 @@ class MotorDriver:
         else:
             duty = abs(velocity) / self.MAX_SPEED * 100.0
 
-        if duty > 0:
+        if velocity > 0:
             duty = max(self.min_duty, duty)
             self.pi.write(self.AIN1, 0)
             self.pi.write(self.AIN2, 1)
         else:
+            duty = min(self.min_duty, duty)
             self.pi.write(self.AIN1, 0)
-            self.pi.write(self.AIN2, 0)
+            self.pi.write(self.AIN2, 1)
 
         self.set_pwm_a(duty)
 

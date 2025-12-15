@@ -50,7 +50,7 @@ class MotorDriverROS(Node):
         # print(f"v_l: {v_l}, v_r: {v_r}")
         duty_l = self.motor_driver.set_left_motor(v_l)
         duty_r = self.motor_driver.set_right_motor(v_r)
-        print(f"duty: {duty_l, duty_r}")
+        # print(f"duty: {duty_l, duty_r}")
 
     def destroy_node(self):
         self.get_logger().info("Stopping motor driver...")
