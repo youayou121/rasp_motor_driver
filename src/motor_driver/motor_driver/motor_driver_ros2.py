@@ -34,7 +34,7 @@ class MotorDriverROS(Node):
         self.smoother = VelocitySmoother()
         self.vel_sub = self.create_subscription(Twist, '/cmd_vel', self.cmd_callback, 10)
         self.odom_pub = self.create_publisher(Odometry, '/odom', 10)
-        self.odom_timer = self.create_timer(0.5, self.update_odom)
+        self.odom_timer = self.create_timer(0.1, self.update_odom)
         self.control_timer = self.create_timer(1 / self.control_hz, self.control_callback)
         self.tf_broadcaster_ = TransformBroadcaster(self)
     def cmd_callback(self, msg):

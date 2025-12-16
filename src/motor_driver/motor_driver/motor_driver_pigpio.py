@@ -30,7 +30,6 @@ class MotorDriver:
         self.pi.hardware_PWM(self.PWMA, 1000, 0)
         self.pi.hardware_PWM(self.PWMB, 1000, 0)
 
-        # ===== 编码器回调 =====
         self.cb_left = self.pi.callback(self.E2A, pigpio.RISING_EDGE, self.callback_left)
         self.cb_right = self.pi.callback(self.E1A, pigpio.RISING_EDGE, self.callback_right)
 
@@ -48,13 +47,14 @@ class MotorDriver:
             duty = 100.0
         else:
             duty = abs(velocity) / self.MAX_SPEED * 100.0
-
+        duty = max(self.min_duty, duty)
         if velocity > 0:
-            duty = max(self.min_duty, duty)
             self.pi.write(self.BIN1, 0)
             self.pi.write(self.BIN2, 1)
+        elif velocity < 0:
+            self.pi.write(self.BIN1, 1)
+            self.pi.write(self.BIN2, 0)
         else:
-            duty = min(self.min_duty, duty)
             self.pi.write(self.BIN1, 0)
             self.pi.write(self.BIN2, 0)
 
@@ -66,15 +66,16 @@ class MotorDriver:
             duty = 100.0
         else:
             duty = abs(velocity) / self.MAX_SPEED * 100.0
-
+        duty = max(self.min_duty, duty)
         if velocity > 0:
-            duty = max(self.min_duty, duty)
             self.pi.write(self.AIN1, 0)
             self.pi.write(self.AIN2, 1)
+        elif velocity < 0:
+            self.pi.write(self.AIN1, 1)
+            self.pi.write(self.AIN2, 0)
         else:
-            duty = min(self.min_duty, duty)
             self.pi.write(self.AIN1, 0)
-            self.pi.write(self.AIN2, 1)
+            self.pi.write(self.AIN2, 0)
 
         self.set_pwm_a(duty)
 
