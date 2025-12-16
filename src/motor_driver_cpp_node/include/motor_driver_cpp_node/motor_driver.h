@@ -3,6 +3,7 @@
 #include <atomic>
 #include <cmath>
 #include <iostream>
+#include <cstdint>
 
 #define PWMA 18
 #define AIN1 14
@@ -20,24 +21,54 @@
 std::atomic<int> left_ticks(0);
 std::atomic<int> right_ticks(0);
 
+// Quadrature decoder state
+std::atomic<int> left_state(0);
+std::atomic<int> right_state(0);
+std::atomic<uint32_t> left_last_tick(0);
+std::atomic<uint32_t> right_last_tick(0);
+
+// transition table: prev*4 + curr => delta
+static const int8_t trans_table[16] = {
+    0,  1, -1,  0,
+   -1,  0,  0,  1,
+    1,  0,  0, -1,
+    0, -1,  1,  0
+};
+
 void encoder_callback(int gpio, int level, uint32_t tick)
 {
-    if (level == PI_HIGH)
+    if (level == PI_TIMEOUT) return; // ignore timeout events
+    const uint32_t DEBOUNCE_US = 50; // microsecond debounce threshold
+
+    if (gpio == E1A || gpio == E1B)
     {
-        if (gpio == E1A)
-        {
-            if (gpioRead(E1B))
-                right_ticks--;
-            else
-                right_ticks++;
-        }
-        else if (gpio == E2A)
-        {
-            if (gpioRead(E2B))
-                left_ticks++;
-            else
-                left_ticks--;
-        }
+        uint32_t last = right_last_tick.load();
+        if (last && (uint32_t)(tick - last) < DEBOUNCE_US) return;
+        right_last_tick.store(tick);
+
+        int prev = right_state.load();
+        int a = gpioRead(E1A) ? 1 : 0;
+        int b = gpioRead(E1B) ? 1 : 0;
+        int curr = (a << 1) | b;
+        right_state.store(curr);
+
+        int8_t delta = trans_table[prev * 4 + curr];
+        if (delta) right_ticks -= delta;
+    }
+    else if (gpio == E2A || gpio == E2B)
+    {
+        uint32_t last = left_last_tick.load();
+        if (last && (uint32_t)(tick - last) < DEBOUNCE_US) return;
+        left_last_tick.store(tick);
+
+        int prev = left_state.load();
+        int a = gpioRead(E2A) ? 1 : 0;
+        int b = gpioRead(E2B) ? 1 : 0;
+        int curr = (a << 1) | b;
+        left_state.store(curr);
+
+        int8_t delta = trans_table[prev * 4 + curr];
+        if (delta) left_ticks += delta;
     }
 }
 
@@ -45,7 +76,7 @@ class MotorDriver
 {
 public:
     double MAX_SPEED = 1.0;
-    int min_duty = 4;
+    int min_duty = 10;
 
     MotorDriver()
     {
@@ -75,7 +106,9 @@ public:
         gpioHardwarePWM(PWMB, 1000, 0);
 
         gpioSetAlertFunc(E2A, encoder_callback);
+        gpioSetAlertFunc(E2B, encoder_callback);
         gpioSetAlertFunc(E1A, encoder_callback);
+        gpioSetAlertFunc(E1B, encoder_callback);
     }
     void set_left_motor(double velocity)
     {

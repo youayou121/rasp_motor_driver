@@ -22,8 +22,8 @@ public:
     {
         WHEEL_DISTANCE = 0.126;
         WHEEL_RADIUS = 0.024;
-        TPR_L = 260;
-        TPR_R = 260;
+        TPR_L = 260 * 4;
+        TPR_R = 260 * 4;
         control_hz_ = 20.0;
 
         x_ = y_ = theta_ = 0.0;
@@ -90,10 +90,10 @@ private:
     {
         int left_ticks, right_ticks;
         motor_driver_->get_ticks(left_ticks, right_ticks);
-
+        printf("left_ticks: %d, right_ticks: %d\n", left_ticks, right_ticks);
         int delta_L = left_ticks - last_left_ticks_;
         int delta_R = right_ticks - last_right_ticks_;
-
+        printf("delta_L: %d, delta_R: %d\n", delta_L, delta_R);
         last_left_ticks_  = left_ticks;
         last_right_ticks_ = right_ticks;
 
