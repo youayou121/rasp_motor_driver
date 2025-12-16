@@ -4,14 +4,29 @@ project(motor_driver_cpp_node)
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
-
-# find dependencies
+include_directories(include)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
-# find_package(wiringPi REQUIRED)
+add_executable(motor_driver_cpp_node
+  src/motor_driver_ros2.cpp
+)
+target_link_libraries(motor_driver_cpp_node pigpio pthread rt)
+
+ament_target_dependencies(motor_driver_cpp_node
+  rclcpp
+  geometry_msgs
+  nav_msgs
+  tf2
+  tf2_ros
+)
+
+install(TARGETS motor_driver_cpp_node
+  DESTINATION lib/${PROJECT_NAME}
+)
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
